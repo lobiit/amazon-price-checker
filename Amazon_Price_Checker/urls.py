@@ -16,7 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from core.views import notify_price
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path('', notify_price, name='notify_price'),
 ]
