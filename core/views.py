@@ -5,6 +5,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from bs4 import BeautifulSoup
 import requests
+
+
 # Import the send_mail function and the model and the serializer for the price alert
 from django.core.mail import send_mail
 
@@ -50,11 +52,15 @@ def notify_price(request):
         # Try to get the current price from the amazon URL using the scraping function
         try:
             current_price = get_price(url)
+            print(current_price)
             # Compare the current price and the desired price
             if current_price <= desired_price:
-                # If the current price is lower or equal to the desired price, send an email notification to the user using django mail
+                # If the current price is lower or equal to the desired price, send an email notification to the user
+                # using django mail
                 subject = f"Price Alert: {url}"
-                message = f"The price of {url} has dropped to {current_price}. Buy it now!\n{content}"  # Add the content to the message
+
+                # Add the content to the message
+                message = f"The price of {url} has dropped to {current_price}. Buy it now!\n{content}"
                 from_email = settings.EMAIL_HOST_USER  # The email address of the sender (configured in settings.py)
                 recipient_list = [user_email]  # The email address of the receiver (passed in the request data)
                 send_mail(subject, message, from_email,
