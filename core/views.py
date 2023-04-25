@@ -2,12 +2,9 @@
 import requests
 from bs4 import BeautifulSoup
 
-# Import the send_mail function, the GenericAPIView class, and the model and the serializer for the price alert
-from django.core.mail import send_mail
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
-from Amazon_Price_Checker import settings
 from .models import PriceAlert
 from .serializers import NotifyPriceSerializer
 from sendgrid import SendGridAPIClient
@@ -25,6 +22,7 @@ def send_email(subject, message, from_email, recipient_list):
         response = sg.send(message)
     except Exception as e:
         print(e.message)
+
 
 def get_price(url):
     try:
@@ -91,12 +89,13 @@ class NotifyPriceView(GenericAPIView):
                     message = f"The price of {url} has dropped to {current_price}. Buy it now!"
 
                     # The email address of the sender (configured in settings.py)
-                    from_email =
+                    from_email = "darchiki80@gmail.com"
 
                     # The email address of the receiver (passed in the request data)
                     recipient_list = [user_email]
-                    send_mail(subject, message, from_email,
-                              recipient_list)  # Send the email using Django's built-in function
+
+                    # Send the email using SendGrid
+                    send_email(subject, message, from_email, recipient_list)
 
                     # Also send a notification message as a JSON response
                     message = f"An email notification has been sent to {user_email}."
