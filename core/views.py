@@ -11,17 +11,17 @@ from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
 
-def send_email(subject, message, from_email, recipient_list):
+def send_email(subject, messages, from_email, recipient_list):
     message = Mail(
         from_email=from_email,
         to_emails=recipient_list,
         subject=subject,
-        html_content=message)
+        html_content=messages)
     try:
-        sg = SendGridAPIClient('SENDGRID_API_KEY')
+        sg = SendGridAPIClient('')
         response = sg.send(message)
     except Exception as e:
-        print(e.message)
+        print(str(e))
 
 
 def get_price(url):
