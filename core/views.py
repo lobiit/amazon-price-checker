@@ -10,7 +10,21 @@ from rest_framework.response import Response
 from Amazon_Price_Checker import settings
 from .models import PriceAlert
 from .serializers import NotifyPriceSerializer
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
+
+def send_email(subject, message, from_email, recipient_list):
+    message = Mail(
+        from_email=from_email,
+        to_emails=recipient_list,
+        subject=subject,
+        html_content=message)
+    try:
+        sg = SendGridAPIClient('SENDGRID_API_KEY')
+        response = sg.send(message)
+    except Exception as e:
+        print(e.message)
 
 def get_price(url):
     try:
@@ -68,15 +82,19 @@ class NotifyPriceView(GenericAPIView):
             # Try to get the current price from the amazon URL using the scraping function
             try:
                 current_price = get_price(url)
-                print(current_price)
+                # print(current_price)
                 # Compare the current price and the desired price
                 if current_price <= desired_price:
                     # If the current price is lower or equal to the desired price, send an email notification to the
                     # user using django mail
                     subject = f"Price Alert: {url}"
                     message = f"The price of {url} has dropped to {current_price}. Buy it now!"
-                    from_email = settings.EMAIL_HOST_USER  # The email address of the sender (configured in settings.py)
-                    recipient_list = [user_email]  # The email address of the receiver (passed in the request data)
+
+                    # The email address of the sender (configured in settings.py)
+                    from_email =
+
+                    # The email address of the receiver (passed in the request data)
+                    recipient_list = [user_email]
                     send_mail(subject, message, from_email,
                               recipient_list)  # Send the email using Django's built-in function
 
