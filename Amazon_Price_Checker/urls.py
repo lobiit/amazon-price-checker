@@ -16,9 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from core.views import notify_price
+from core.views import NotifyPriceView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path('', notify_price, name='notify_price'),
+    path('', NotifyPriceView.as_view(), name='notify_price'),
 ]
