@@ -1,6 +1,8 @@
 # Import the required modules
 import requests
 from bs4 import BeautifulSoup
+import datetime
+import time
 
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
@@ -60,6 +62,41 @@ def get_price(url):
         print(f"Something went wrong: {err}")
 
 
+# the cron job will run continuously each day at the specified time interval. By setting the job to run at a specific
+# time every day using the cron syntax, the system will automatically run the task at the specified interval, without
+# the need for manual intervention
+def check_price_daily(url, desired_price, user_email):
+    # Check if the current time is before 9am
+    now = datetime.datetime.now()
+    if now.time() < datetime.time(9, 0, 0):
+        # If it is before 9am, wait until 9am to check the price
+        wait_time = datetime.datetime.combine(now.date(), datetime.time(9, 0, 0)) - now
+        time.sleep(wait_time.total_seconds())
+
+    # Check the price of the product
+    current_price = get_price(url)
+
+    if current_price <= desired_price:
+        # If the current price is lower or equal to the desired price, send an email notification to the user
+        subject = f"Price Alert: {url}"
+        message = f"The price of {url} has dropped to {current_price}. Buy it now!"
+
+        # The email address of the sender (configured in settings.py)
+        from_email = "darchiki80@gmail.com"
+
+        # The email address of the receiver (passed in the request data)
+        recipient_list = [user_email]
+
+        # Send the email using SendGrid
+        send_email(subject, message, from_email, recipient_list)
+
+        # Return a success message
+        return f"An email notification has been sent to {user_email}."
+    else:
+        # If the current price is higher than the desired price, return a waiting message
+        return f"The price of {url} is still {current_price}. Wait for it to drop below {desired_price}."
+
+
 # Define a view class for the API endpoint that inherits from GenericAPIView
 class NotifyPriceView(GenericAPIView):
     # Specify the serializer class for the view
@@ -73,45 +110,19 @@ class NotifyPriceView(GenericAPIView):
         serializer = self.get_serializer(data=data, context={"request": request})
         # Validate the data using the serializer
         if serializer.is_valid():
-            # Get the amazon URL, the desired price, the user email and the content from the validated data
+            # Get the amazon URL, the desired price, and the user email from the validated data
             url = serializer.validated_data["url"]
             desired_price = serializer.validated_data["desired_price"]
             user_email = serializer.validated_data["user_email"]
-            # Try to get the current price from the amazon URL using the scraping function
-            try:
-                current_price = get_price(url)
-                # print(current_price)
-                # Compare the current price and the desired price
-                if current_price <= desired_price:
-                    # If the current price is lower or equal to the desired price, send an email notification to the
-                    # user using django mail
-                    subject = f"Price Alert: {url}"
-                    message = f"The price of {url} has dropped to {current_price}. Buy it now!"
-
-                    # The email address of the sender (configured in settings.py)
-                    from_email = "darchiki80@gmail.com"
-
-                    # The email address of the receiver (passed in the request data)
-                    recipient_list = [user_email]
-
-                    # Send the email using SendGrid
-                    send_email(subject, message, from_email, recipient_list)
-
-                    # Also send a notification message as a JSON response
-                    message = f"An email notification has been sent to {user_email}."
-                else:
-                    # If the current price is higher than the desired price, send a waiting message as a JSON response
-                    message = f"The price of {url} is still {current_price}. Wait for it to drop below {desired_price}."
-                # Create or update a PriceAlert object with the validated data and save it to the database
-                price_alert, created = PriceAlert.objects.update_or_create(
-                    url=url,
-                    user_email=user_email,
-                    defaults={"desired_price": desired_price}
-                )
-                price_alert.save()
-            except ValueError:
-                # If there was a ValueError exception raised by get_price, send an error message as a JSON response
-                message = f"Could not find price element for {url}. Please make sure it is a valid amazon product page."
+            # Check the price daily
+            message = check_price_daily(url, desired_price, user_email)
+            # Create or update a PriceAlert object with the validated data and save it to the database
+            price_alert, created = PriceAlert.objects.update_or_create(
+                url=url,
+                user_email=user_email,
+                defaults={"desired_price": desired_price}
+            )
+            price_alert.save()
             # Return a JSON response with the message
             return Response({"message": message})
         else:
