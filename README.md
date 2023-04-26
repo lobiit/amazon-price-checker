@@ -1,49 +1,44 @@
-# Price Tracker
+# Django Price Tracker
 
-This is a Python program that tracks the price of a product on Amazon and sends an email notification if the price drops below a certain threshold. It uses the BeautifulSoup library to scrape the webpage for the current price and compares it to the desired price.
+A web application that allows users to track the price of an item on a website and receive an email notification if the price drops to or below a desired price.
 
 ## Installation
 
-To use this program, you will need to have Python 3.x installed on your system. You can download the latest version of Python from the official website: https://www.python.org/downloads/
+1. Clone the repository:
 
-You will also need to install the following third-party libraries:
+```
+git clone https://github.com/lobiit/amazon-price-checker
+```
 
-- requests
-- BeautifulSoup
-- smtplib
+2. Install the requirements:
 
-You can install these libraries using the following command:
+```
+cd amazon-price-tracker
+pip install -r requirements.txt
+```
 
-```bash
-pip install requests beautifulsoup4 secure-smtplib
+3. Migrate the database:
+
+```
+python manage.py migrate
 ```
 
 ## Usage
 
-To use this program, you will need to provide the URL of the product page on Amazon and the desired price threshold. You can do this by editing the `URL` and `DESIRED_PRICE` variables in the `price_tracker.py` file.
+1. Start the development server:
 
-Once you have set the URL and desired price, you can run the program using the following command:
-
-```bash
-python price_tracker.py
+```
+python manage.py runserver
 ```
 
-The program will check the price of the product and send an email notification if the price drops below the desired threshold.
+2. Navigate to the URL http://localhost:8000/ in your web browser.
 
-You can also set up a cron job to run the program automatically on a daily basis. To do this, open your crontab file by running the following command:
+3. Enter the URL of the item you want to track and the desired price.
 
-```bash
-crontab -e
-```
+4. Click the "POST" button.
 
-Then add the following line to the file:
-
-```bash
-0 0 * * * /usr/bin/python /path/to/price_tracker.py
-```
-
-This will run the program at midnight (0:00) every day.
+5. The application will check the price of the item daily and send you an email if the price drops to or below the desired price.
 
 ## License
 
-This program is licensed under the MIT License.
+This project is licensed under the MIT License
