@@ -22,7 +22,18 @@ pip install -r requirements.txt
 ```
 python manage.py migrate
 ```
+# To run this command daily using a cron job, you need to add a new entry to your system's crontab file. Here are the steps to do this:
 
+Open your system's crontab file in your text editor.
+````
+$ crontab -e
+````
+Add the following line to the end of the file, replacing path/to/python with the path to your Python interpreter, and path/to/project with the path to your Django project's root directory:
+````
+0 0 * * * path/to/python path/to/project/manage.py check_price_daily
+````
+
+Save and close the file.
 ## Usage
 
 1. Start the development server:
